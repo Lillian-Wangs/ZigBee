@@ -1,0 +1,36 @@
+Kripke "kripke.dot" Space "space.dot" Eval "eval.csv";
+
+Let fblue1=[color==22];//当前状态终端节点
+Let fblue=[color==2];//终端节点
+Let fred=[color==1];//路由器
+Let fgreen=[color==3];//协调器
+Let fpower=[power>30];//电量大于30%
+
+Let close1(x,y) = y & (N x);//x附近(1跳)的y
+Let close2(x,y) = close(close(x,y),y);//x附近(2跳以内)的y
+Let close3(x,y) = close(close(close(x,y),y),y);//x附近(3跳以内)的y
+
+Let reach(x,y) = !((!y) S (!x));
+Let touch(x,y) = x & reach(x|y,y);
+
+Let connect(x,y,z)=close1(x,touch(y,z));//性质1公式
+
+Let reliableRouter(x,y,z)=touch(x&y,z);//性质2公式1
+Let reliableConnect(x1,x,y,z)=close1(x1,reliableRouter(x,y,z));//性质2公式2
+Output "output/out";
+//1表示红色，2表示蓝色，3表示绿色
+Check "0x0000FF" fblue1;//当前状态终端节点输出蓝色
+Check "0x008000" fgreen;//协调器输出绿色
+Check "0xFF0000" fred;//路由器输出红色
+//Check "0xFFFF00" fpower;//电量小于等于30输出黄色
+
+//性质1：节点连接是否正确
+//Check "0xFFFF00" connect(fblue1,fred,fgreen);//符合条件路径第一个节点显示黄色
+//性质2：所有路由器的电量在30%以上
+//Check "0x9F79EE" reliableRouter(fpower,fred,fgreen);//可信路径上的路由器显示浅紫色
+//可信连接，终端到协调器，路由电量大于30%
+Check "0xD9D9D9" [power<30]&fred;//电量<30路由器显示灰色
+Check "0x9F79EE" reliableConnect(fblue1,fpower,fred,fgreen);//可信路径上的路由器显示浅紫色
+
+
+
